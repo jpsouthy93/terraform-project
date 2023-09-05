@@ -1,15 +1,19 @@
 # Creating a production ready AWS Instance using Terraform
 
 ## Initialise Remote State
-To initialise remote state we must have an existing S3 bucket and DynamoDB table running. We can do this by using the `main.tf` and `variables.tf` files in the s3-dynamo directory to set up an S3 bucket and DynamoDB table. 
+Initialising remote state must be done separately, as the s3 bucket to hold your remote state must exist independently, to do this `cd` into `s3-dynamo` and use `terraform init` to initialize it, `terraform plan` to check your infra is correct and `terraform apply` to get it started.
 -- This can be checked by navigating to your S3 bucket in the AWS console and ensuring a `.tfstate` file exists
+Now `cd` back into your main project directory
+
+## Running it straight away
+Once you've initialised the remote state bucket and you've `cd`'d back into the main dir you should set your chosen s3 and dynamo table names in the `/s3-dynamo/variables.tf` file and `/root/backend.tf` file, then `terraform init`, `terraform plan` to check everything seems correct, then `terraform apply` to deploy the infrastructure.
 
 ## Creating a VPC
-To create our VPC we can use the files within the VPC folder. The main.tf includes the resource block, and a generic CIDR range for our VPC. It also includes a tag for the VPC itself, and a dynamic name so we can change this between environments. 
+To create our VPC we can use the files within the VPC module. The `main.tf` includes the resource block, and a generic `CIDR range` for our VPC. It also includes a tag for the VPC itself, and a dynamic name so we can change this between environments. 
 I've since refactored the `cidr_block` to be dynamic
 I also specify some tags on this, so we can dynamically rename and state who's created this infra.
 Within our outputs, so other portions of our terraform code have access, we 'return' `vpc_id` and `vpc_cidr_block`. This allows our other modules to access the newly created VPC_ID
-Within the variables file we set our CIDR block, ManagedBy tag and `vpc_name` - these are all 'requested' within `/root/main.tf` and the values determined by our `.tfvars` file
+Within the variables file we set our `CIDR block`, `ManagedBy` tag and `vpc_name` - these are all 'requested' within `/root/main.tf` and the values determined by our `.tfvars` file
 
 ## Creating our Subnets
 First we find the available availability zones in the region using the `data` command. Then we check the length of the public CIDRs list we've set, and make that the count. We set the `vpc_id` to the created `vpc_id` (that's outputted). The `cidr_block` is then set to the index value of the subnet we're making (So the `public_cidrs` list has 3 elements, it will take the 1st element for 1st subnet, 2nd for 2nd and so on) and last it will take an availability zone from the pool of available ones, and again take the 1st zone for 1st subnet, and so on.

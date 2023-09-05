@@ -1,5 +1,6 @@
 .terraform
 .terraform.lock.hcl
 terraform.tfstate
-s3-dynamo/*
+s3-dynamo/terraform*
+s3-dynamo/.terraform*
 <YOUR-SSH-KEY>.pem   
